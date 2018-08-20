@@ -94,6 +94,13 @@ function qa_log_in_external_user($source, $identifier, $fields)
 	if (strlen(@$fields['email']) && $fields['confirmed']) { // only if email is confirmed
 		$oemail = $fields['email'];
 	}
+
+    if (strpos(@$fields['email'],'augustana.edu') === false &&
+        strpos(@$fields['email'],'fsondahl') === false) {
+        //         error_log("Email login: " . @$fields['email']);
+        throw new Exception("Only augustana.edu addresses are allowed for this site!",42);
+    }
+    
 	
 	if ($countusers) { // user exists so log them in
 		//always update email and handle

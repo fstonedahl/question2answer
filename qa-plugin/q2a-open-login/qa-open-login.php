@@ -115,6 +115,12 @@ class qa_open_login {
 			} catch(Exception $e) {
 				// not really interested in the error message - for now
 				// however, in case we have errors 6 or 7, then we have to call logout to clean everything up
+				if ($e->getCode() == 42) {
+				   $adapter->logout();
+				   qa_redirect_raw(qa_opt('site_url') . "augustana_login_failure.html");
+                                   return false;
+				}
+
 				if($e->getCode() == 6 || $e->getCode() == 7) {
 					$adapter->logout();
 				}
