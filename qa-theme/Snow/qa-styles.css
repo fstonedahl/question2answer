@@ -427,7 +427,8 @@ input[type="submit"].qa-search-button:hover {
 /* header */
 .qa-header {
 	padding: 15px 10px 5px;
-	height: auto;
+	/* height: auto; */
+	height: 65px;
 }
 
 .qa-logo {
