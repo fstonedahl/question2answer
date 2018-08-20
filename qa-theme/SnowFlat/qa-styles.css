@@ -1461,7 +1461,7 @@ blockquote p {
 @media only screen and (min-width: 992px) {
 	/* two column layout for Desktops and above*/
 	.qa-top-users-item {
-		width: 48%;
+		width: 98%;
 		max-width: none;
 	}
 
@@ -1555,8 +1555,8 @@ blockquote p {
 	padding-left: 1.8em;
 }
 .qa-ranking-users-points .qa-top-users-score:before {
-	content: '\e810';
-	font-family: "fontello";
+        content: '*'; /*'\e810';*/
+	/*font-family: "fontello";*/
 	display: inline-block;
 	position: absolute;
 	top: 0;
