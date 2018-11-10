@@ -35,9 +35,10 @@ function qa_db_points_option_names()
 	return array(
 		'points_post_q', 'points_select_a', 'points_per_q_voted_up', 'points_per_q_voted_down', 'points_q_voted_max_gain', 'points_q_voted_max_loss',
 		'points_post_a', 'points_a_selected', 'points_per_a_voted_up', 'points_per_a_voted_down', 'points_a_voted_max_gain', 'points_a_voted_max_loss',
-		'points_per_c_voted_up', 'points_per_c_voted_down', 'points_c_voted_max_gain', 'points_c_voted_max_loss',
+		'points_post_c', 'points_per_c_voted_up', 'points_per_c_voted_down', 'points_c_voted_max_gain', 'points_c_voted_max_loss',
 		'points_vote_up_q', 'points_vote_down_q', 'points_vote_up_a', 'points_vote_down_a',
 
+        'points_restart_score_epoch',
 		'points_multiple', 'points_base',
 	);
 }
@@ -57,61 +58,62 @@ function qa_db_points_calculations()
 	require_once QA_INCLUDE_DIR . 'app/options.php';
 
 	$options = qa_get_options(qa_db_points_option_names());
-
+    $datecheck = " AND userid_src.created >= " . $options['points_restart_score_epoch'] . " ";
+    $datecheck2 = " AND ^posts.created >= " . $options['points_restart_score_epoch'] . " ";
 	return array(
 		'qposts' => array(
 			'multiple' => $options['points_multiple'] * $options['points_post_q'],
-			'formula' => "COUNT(*) AS qposts FROM ^posts AS userid_src WHERE userid~ AND type='Q'",
+			'formula' => "COUNT(*) AS qposts FROM ^posts AS userid_src WHERE userid~ " . $datecheck . "AND type='Q'",
 		),
 
 		'aposts' => array(
 			'multiple' => $options['points_multiple'] * $options['points_post_a'],
-			'formula' => "COUNT(*) AS aposts FROM ^posts AS userid_src WHERE userid~ AND type='A'",
+			'formula' => "COUNT(*) AS aposts FROM ^posts AS userid_src WHERE userid~ " . $datecheck. "AND type='A'",
 		),
 
 		'cposts' => array(
-			'multiple' => 0,
-			'formula' => "COUNT(*) AS cposts FROM ^posts AS userid_src WHERE userid~ AND type='C'",
+			'multiple' => $options['points_multiple'] * $options['points_post_c'],
+			'formula' => "COUNT(*) AS cposts FROM ^posts AS userid_src WHERE userid~ " .$datecheck . "AND type='C'",
 		),
 
 		'aselects' => array(
 			'multiple' => $options['points_multiple'] * $options['points_select_a'],
-			'formula' => "COUNT(*) AS aselects FROM ^posts AS userid_src WHERE userid~ AND type='Q' AND selchildid IS NOT NULL",
+			'formula' => "COUNT(*) AS aselects FROM ^posts AS userid_src WHERE userid~ " .$datecheck . "AND type='Q' AND selchildid IS NOT NULL",
 		),
 
 		'aselecteds' => array(
 			'multiple' => $options['points_multiple'] * $options['points_a_selected'],
-			'formula' => "COUNT(*) AS aselecteds FROM ^posts AS userid_src JOIN ^posts AS questions ON questions.selchildid=userid_src.postid WHERE userid_src.userid~ AND userid_src.type='A' AND NOT (questions.userid<=>userid_src.userid)",
+			'formula' => "COUNT(*) AS aselecteds FROM ^posts AS userid_src JOIN ^posts AS questions ON questions.selchildid=userid_src.postid WHERE userid_src.userid~ AND userid_src.type='A' AND NOT (questions.userid<=>userid_src.userid) " . $datecheck,
 		),
 
 		'qupvotes' => array(
 			'multiple' => $options['points_multiple'] * $options['points_vote_up_q'],
-			'formula' => "COUNT(*) AS qupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='Q' AND userid_src.vote>0",
+			'formula' => "COUNT(*) AS qupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='Q' AND userid_src.vote>0" . $datecheck2,
 		),
 
 		'qdownvotes' => array(
 			'multiple' => $options['points_multiple'] * $options['points_vote_down_q'],
-			'formula' => "COUNT(*) AS qdownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='Q' AND userid_src.vote<0",
+			'formula' => "COUNT(*) AS qdownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='Q' AND userid_src.vote<0" . $datecheck2,
 		),
 
 		'aupvotes' => array(
 			'multiple' => $options['points_multiple'] * $options['points_vote_up_a'],
-			'formula' => "COUNT(*) AS aupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='A' AND userid_src.vote>0",
+			'formula' => "COUNT(*) AS aupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='A' AND userid_src.vote>0" . $datecheck2,
 		),
 
 		'adownvotes' => array(
 			'multiple' => $options['points_multiple'] * $options['points_vote_down_a'],
-			'formula' => "COUNT(*) AS adownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='A' AND userid_src.vote<0",
+			'formula' => "COUNT(*) AS adownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='A' AND userid_src.vote<0" . $datecheck2,
 		),
 
 		'cupvotes' => array(
 			'multiple' => 0,
-			'formula' => "COUNT(*) AS cupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='C' AND userid_src.vote>0",
+			'formula' => "COUNT(*) AS cupvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='C' AND userid_src.vote>0" . $datecheck2,
 		),
 
 		'cdownvotes' => array(
 			'multiple' => 0,
-			'formula' => "COUNT(*) AS cdownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='C' AND userid_src.vote<0",
+			'formula' => "COUNT(*) AS cdownvotes FROM ^uservotes AS userid_src JOIN ^posts ON userid_src.postid=^posts.postid WHERE userid_src.userid~ AND LEFT(^posts.type, 1)='C' AND userid_src.vote<0" . $datecheck2,
 		),
 
 		'qvoteds' => array(
@@ -120,7 +122,7 @@ function qa_db_points_calculations()
 				"LEAST(" . ((int)$options['points_per_q_voted_up']) . "*upvotes," . ((int)$options['points_q_voted_max_gain']) . ")" .
 				"-" .
 				"LEAST(" . ((int)$options['points_per_q_voted_down']) . "*downvotes," . ((int)$options['points_q_voted_max_loss']) . ")" .
-				"), 0) AS qvoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='Q' AND userid~",
+				"), 0) AS qvoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='Q' AND userid~" . $datecheck,
 		),
 
 		'avoteds' => array(
@@ -129,7 +131,7 @@ function qa_db_points_calculations()
 				"LEAST(" . ((int)$options['points_per_a_voted_up']) . "*upvotes," . ((int)$options['points_a_voted_max_gain']) . ")" .
 				"-" .
 				"LEAST(" . ((int)$options['points_per_a_voted_down']) . "*downvotes," . ((int)$options['points_a_voted_max_loss']) . ")" .
-				"), 0) AS avoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='A' AND userid~",
+            "), 0) AS avoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='A' AND userid~" . $datecheck,
 		),
 
 		'cvoteds' => array(
@@ -138,17 +140,17 @@ function qa_db_points_calculations()
 				"LEAST(" . ((int)$options['points_per_c_voted_up']) . "*upvotes," . ((int)$options['points_c_voted_max_gain']) . ")" .
 				"-" .
 				"LEAST(" . ((int)$options['points_per_c_voted_down']) . "*downvotes," . ((int)$options['points_c_voted_max_loss']) . ")" .
-				"), 0) AS cvoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='C' AND userid~",
+				"), 0) AS cvoteds FROM ^posts AS userid_src WHERE LEFT(type, 1)='C' AND userid~" . $datecheck,
 		),
 
 		'upvoteds' => array(
 			'multiple' => 0,
-			'formula' => "COALESCE(SUM(upvotes), 0) AS upvoteds FROM ^posts AS userid_src WHERE userid~",
+			'formula' => "COALESCE(SUM(upvotes), 0) AS upvoteds FROM ^posts AS userid_src WHERE userid~" . $datecheck,
 		),
 
 		'downvoteds' => array(
 			'multiple' => 0,
-			'formula' => "COALESCE(SUM(downvotes), 0) AS downvoteds FROM ^posts AS userid_src WHERE userid~",
+			'formula' => "COALESCE(SUM(downvotes), 0) AS downvoteds FROM ^posts AS userid_src WHERE userid~" . $datecheck,
 		),
 	);
 }

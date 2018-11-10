@@ -173,9 +173,9 @@ foreach ($optionnames as $optionname) {
 }
 
 qa_array_insert($qa_content['form']['fields'], 'points_post_a', array('blank0' => array('type' => 'blank')));
-qa_array_insert($qa_content['form']['fields'], 'points_per_c_voted_up', array('blank1' => array('type' => 'blank')));
+qa_array_insert($qa_content['form']['fields'], 'points_post_c', array('blank1' => array('type' => 'blank')));
 qa_array_insert($qa_content['form']['fields'], 'points_vote_up_q', array('blank2' => array('type' => 'blank')));
-qa_array_insert($qa_content['form']['fields'], 'points_multiple', array('blank3' => array('type' => 'blank')));
+qa_array_insert($qa_content['form']['fields'], 'points_restart_score_epoch', array('blank3' => array('type' => 'blank')));
 
 
 $qa_content['navigation']['sub'] = qa_admin_sub_navigation();
